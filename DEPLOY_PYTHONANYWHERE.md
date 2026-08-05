@@ -93,9 +93,7 @@ exit()
 2. **Source code**: `/home/download245/download-website`
 3. **Working directory**: `/home/download245/download-website`
 4. **Virtualenv**: `/home/download245/.virtualenvs/appstore-env`
-5. **WSGI file**: open the link and **replace** contents with `pythonanywhere_wsgi.py` from the repo (already set for `download245`).
-   - If site-packages path fails, check:  
-     `python -c "import site; print(site.getsitepackages())"` inside the venv
+5. **WSGI file**: open the WSGI configuration file link and **delete everything**, then paste the code below.
 6. **Static files** mappings:
 
 | URL        | Directory                                           |
@@ -104,6 +102,52 @@ exit()
 | `/media/`  | `/home/download245/download-website/media`          |
 
 7. Click **Reload** on the Web tab.
+
+### WSGI file (paste into PythonAnywhere)
+
+Open **Web → WSGI configuration file** and replace the entire file with:
+
+```python
+"""
+PythonAnywhere WSGI for download245.pythonanywhere.com
+Paste this whole file into: Web → WSGI configuration file
+"""
+
+import os
+import sys
+from pathlib import Path
+
+# --- Project path ---
+project_home = '/home/download245/download-website'
+if project_home not in sys.path:
+    sys.path.insert(0, project_home)
+
+# --- Virtualenv site-packages ---
+# After: mkvirtualenv --python=python3.10 appstore-env
+# If Python version differs, fix the 3.10 path:
+#   ls ~/.virtualenvs/appstore-env/lib/
+venv_site = '/home/download245/.virtualenvs/appstore-env/lib/python3.10/site-packages'
+if os.path.isdir(venv_site) and venv_site not in sys.path:
+    sys.path.insert(0, venv_site)
+
+# --- Load .env then start Django ---
+from dotenv import load_dotenv
+
+load_dotenv(Path(project_home) / '.env')
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+```
+
+If the site-packages path is wrong (ImportError for Django), run this **inside the virtualenv** and update `venv_site` above:
+
+```bash
+workon appstore-env
+python -c "import site; print(site.getsitepackages())"
+```
 
 ---
 

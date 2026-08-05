@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}Search: {{ query }} — {% endif %}AppStore{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1 class="display-5 mb-2">Discover &amp; Download Apps</h1>
+        <p class="mb-3 lead fs-6">
+          {{ site_settings.site_tagline|default:"Browse Android APKs and Windows EXE apps in one place." }}
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="stat-pill"><i class="bi bi-grid"></i> <strong>{{ store_stats.apps }}</strong> apps</span>
+          <span class="stat-pill"><i class="bi bi-download"></i> <strong>{{ store_stats.downloads }}</strong> downloads</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <form method="get" action="{% url 'store:home' %}" class="search-box input-group ms-lg-auto" role="search">
+          {% if platform %}<input type="hidden" name="platform" value="{{ platform }}">{% endif %}
+          {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+          {% if has_icon %}<input type="hidden" name="has_icon" value="1">{% endif %}
+          {% if updated_month %}<input type="hidden" name="updated" value="month">{% endif %}
+          <input
+            type="search"
+            name="q"
+            class="form-control form-control-lg"
+            placeholder="Search apps…"
+            value="{{ query }}"
+            aria-label="Search apps"
+          >
+          <button class="btn btn-primary btn-lg" type="submit" aria-label="Search">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="filter-bar mt-4">
+      <a class="chip {% if not platform %}active{% endif %}"
+         href="?{% if query %}q={{ query|urlencode }}&{% endif %}sort={{ sort }}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        All platforms
+      </a>
+      <a class="chip {% if platform == 'android' %}active{% endif %}"
+         href="?platform=android{% if query %}&q={{ query|urlencode }}{% endif %}&sort={{ sort }}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        <i class="bi bi-android2 me-1"></i> Android
+      </a>
+      <a class="chip {% if platform == 'windows' %}active{% endif %}"
+         href="?platform=windows{% if query %}&q={{ query|urlencode }}{% endif %}&sort={{ sort }}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        <i class="bi bi-windows me-1"></i> Windows
+      </a>
+      <span class="text-muted small mx-1 d-none d-md-inline">|</span>
+      <a class="chip {% if sort == 'newest' %}active{% endif %}"
+         href="?sort=newest{% if query %}&q={{ query|urlencode }}{% endif %}{% if platform %}&platform={{ platform }}{% endif %}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        Newest
+      </a>
+      <a class="chip {% if sort == 'downloads' %}active{% endif %}"
+         href="?sort=downloads{% if query %}&q={{ query|urlencode }}{% endif %}{% if platform %}&platform={{ platform }}{% endif %}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        Most downloaded
+      </a>
+      <a class="chip {% if sort == 'name' %}active{% endif %}"
+         href="?sort=name{% if query %}&q={{ query|urlencode }}{% endif %}{% if platform %}&platform={{ platform }}{% endif %}{% if has_icon %}&has_icon=1{% endif %}{% if updated_month %}&updated=month{% endif %}">
+        Name A–Z
+      </a>
+      <a class="chip {% if has_icon %}active{% endif %}"
+         href="?{% if has_icon %}{% else %}has_icon=1&{% endif %}{% if query %}q={{ query|urlencode }}&{% endif %}{% if platform %}platform={{ platform }}&{% endif %}sort={{ sort }}{% if updated_month %}&updated=month{% endif %}">
+        Has icon
+      </a>
+      <a class="chip {% if updated_month %}active{% endif %}"
+         href="?{% if updated_month %}{% else %}updated=month&{% endif %}{% if query %}q={{ query|urlencode }}&{% endif %}{% if platform %}platform={{ platform }}&{% endif %}sort={{ sort }}{% if has_icon %}&has_icon=1{% endif %}">
+        Updated this month
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="py-4">
+  <div class="container">
+    {% if show_featured and featured_apps %}
+      <div class="mb-4">
+        <h2 class="section-title h5 mb-3"><i class="bi bi-star-fill text-warning me-1"></i> Featured</h2>
+        <div class="row g-3">
+          {% for app in featured_apps %}
+            <div class="col-sm-6 col-lg-4">
+              {% include "store/_app_card.html" with app=app %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if recently_viewed %}
+      <div class="mb-4">
+        <h2 class="section-title h6 text-muted mb-3">Recently viewed</h2>
+        <div class="d-flex flex-wrap gap-2">
+          {% for app in recently_viewed %}
+            <a href="{% url 'store:detail' app.pk %}" class="chip">
+              {{ app.name }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <h2 class="section-title h5 mb-0">
+        {% if query %}Results for “{{ query }}”{% else %}All apps{% endif %}
+        <span class="badge text-bg-secondary ms-1">{{ app_count }}</span>
+      </h2>
+      {% if query or platform or has_icon or updated_month or sort != 'newest' %}
+        <a href="{% url 'store:home' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+          <i class="bi bi-x-circle me-1"></i> Clear filters
+        </a>
+      {% endif %}
+    </div>
+
+    {% if apps %}
+      <div class="row g-4">
+        {% for app in apps %}
+          <div class="col-sm-6 col-lg-4 col-xl-3">
+            {% include "store/_app_card.html" with app=app %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div><i class="bi bi-inbox"></i></div>
+        {% if query or platform or has_icon or updated_month %}
+          <h3 class="h5">No apps match your filters</h3>
+          <p class="mb-3">Try a different keyword, platform, or clear filters.</p>
+          <a href="{% url 'store:home' %}" class="btn btn-outline-brand">View all apps</a>
+        {% else %}
+          <h3 class="h5">No apps yet</h3>
+          <p class="mb-3">Admins can publish apps from the dashboard.</p>
+          {% if user.is_staff %}
+            <a href="{% url 'store:dashboard_app_create' %}" class="btn btn-brand">
+              <i class="bi bi-cloud-upload me-1"></i> Upload app
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

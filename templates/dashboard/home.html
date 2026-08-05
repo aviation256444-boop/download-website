@@ -1,0 +1,193 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'store:dashboard_export' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+    <i class="bi bi-download me-1"></i> CSV
+  </a>
+  <a href="{% url 'store:dashboard_app_create' %}" class="btn btn-brand btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Upload app
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="stat-label">Total apps</div>
+          <div class="stat-value">{{ stats.total_apps }}</div>
+          <div class="small text-muted mt-1">{{ stats.published }} live · {{ stats.drafts }} draft</div>
+        </div>
+        <div class="stat-icon purple"><i class="bi bi-grid"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="stat-label">Downloads</div>
+          <div class="stat-value">{{ stats.total_downloads }}</div>
+        </div>
+        <div class="stat-icon amber"><i class="bi bi-download"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="stat-label">Android builds</div>
+          <div class="stat-value">{{ stats.android_apps }}</div>
+          <div class="small text-muted mt-1">{{ stats.android_downloads }} downloads</div>
+        </div>
+        <div class="stat-icon green"><i class="bi bi-android2"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="stat-label">Windows builds</div>
+          <div class="stat-value">{{ stats.windows_apps }}</div>
+          <div class="small text-muted mt-1">{{ stats.windows_downloads }} downloads</div>
+        </div>
+        <div class="stat-icon blue"><i class="bi bi-windows"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <form method="post" id="bulkForm">
+      {% csrf_token %}
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Your apps <span class="badge text-bg-secondary ms-1">{{ app_count }}</span></h2>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <select name="bulk_action" class="form-select form-select-sm" style="width: auto;">
+              <option value="">Bulk action…</option>
+              <option value="publish">Publish</option>
+              <option value="unpublish">Unpublish (draft)</option>
+              <option value="feature">Feature</option>
+              <option value="unfeature">Unfeature</option>
+              <option value="delete">Delete</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-soft" onclick="return confirm('Apply bulk action to selected apps?');">
+              Apply
+            </button>
+            <form method="get" class="d-flex gap-2" style="max-width: 240px;" onsubmit="event.stopPropagation();">
+              <!-- nested forms invalid; use separate search below -->
+            </form>
+          </div>
+        </div>
+
+        <div class="px-3 py-2 border-bottom d-flex flex-wrap gap-2 align-items-center" style="border-color: var(--border) !important;">
+          <input form="searchForm" type="search" name="q" value="{{ query }}" class="form-control form-control-sm" placeholder="Search apps…" style="max-width: 220px;">
+          <select form="searchForm" name="status" class="form-select form-select-sm" style="width: auto;">
+            <option value="">All statuses</option>
+            <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
+            <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
+            <option value="featured" {% if status == 'featured' %}selected{% endif %}>Featured</option>
+          </select>
+          <button form="searchForm" class="btn btn-sm btn-soft" type="submit"><i class="bi bi-search"></i></button>
+        </div>
+
+        {% if apps %}
+          <div class="table-responsive">
+            <table class="table table-apps align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width:40px;"><input type="checkbox" id="selectAllApps" class="form-check-input" aria-label="Select all"></th>
+                  <th>App</th>
+                  <th>Status</th>
+                  <th>Platforms</th>
+                  <th>Version</th>
+                  <th>Downloads</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for app in apps %}
+                  <tr>
+                    <td><input type="checkbox" name="app_ids" value="{{ app.pk }}" class="form-check-input"></td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        {% if app.icon %}
+                          <img src="{{ app.icon.url }}" alt="" class="app-thumb">
+                        {% else %}
+                          <div class="app-thumb-ph"><i class="bi bi-app"></i></div>
+                        {% endif %}
+                        <div class="min-w-0">
+                          <div class="fw-semibold text-truncate">{{ app.name }}</div>
+                          <div class="small text-muted text-truncate" style="max-width:200px;">{{ app.description|truncatechars:50 }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {% if app.is_published %}
+                        <span class="badge badge-platform badge-android">Published</span>
+                      {% else %}
+                        <span class="badge badge-platform badge-draft">Draft</span>
+                      {% endif %}
+                      {% if app.is_featured %}<span class="badge badge-platform badge-featured">Featured</span>{% endif %}
+                    </td>
+                    <td>
+                      {% if app.has_android %}<span class="badge badge-platform badge-android">Android</span>{% endif %}
+                      {% if app.has_windows %}<span class="badge badge-platform badge-windows">Windows</span>{% endif %}
+                    </td>
+                    <td class="text-muted">v{{ app.version }}</td>
+                    <td>
+                      <div class="small"><strong>{{ app.download_count }}</strong>
+                        <div class="text-muted">A {{ app.android_download_count }} · W {{ app.windows_download_count }}</div>
+                      </div>
+                    </td>
+                    <td class="text-end text-nowrap">
+                      {% if app.is_published %}
+                        <a href="{% url 'store:detail' app.pk %}" class="btn btn-sm btn-soft me-1" target="_blank" title="View"><i class="bi bi-eye"></i></a>
+                      {% endif %}
+                      <a href="{% url 'store:dashboard_app_edit' app.pk %}" class="btn btn-sm btn-soft me-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                      <a href="{% url 'store:dashboard_app_delete' app.pk %}" class="btn btn-sm btn-soft-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+            <p class="mb-3">No apps yet.</p>
+            <a href="{% url 'store:dashboard_app_create' %}" class="btn btn-brand">Upload app</a>
+          </div>
+        {% endif %}
+      </div>
+    </form>
+    <form id="searchForm" method="get" class="d-none"></form>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="panel">
+      <div class="panel-header"><h2><i class="bi bi-activity me-1"></i> Activity</h2></div>
+      <div class="p-3">
+        {% if activity %}
+          {% for item in activity %}
+            <div class="activity-item">
+              <div class="text-body">{{ item.message }}</div>
+              <div class="small">{{ item.created_at|timesince }} ago</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small mb-0">No activity yet. Upload an app to get started.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

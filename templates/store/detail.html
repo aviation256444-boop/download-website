@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app.name }} — AppStore{% endblock %}
+
+{% block content %}
+<section class="py-4 py-md-5">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'store:home' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ app.name }}</li>
+      </ol>
+    </nav>
+
+    {% if download_started %}
+      <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+        Your {{ download_platform|title }} download should start shortly.
+        If it didn’t,
+        <a href="{% url 'store:download' app.pk download_platform %}" class="alert-link" data-download-link>click here</a>.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endif %}
+
+    <div class="detail-card p-4 p-md-5">
+      <div class="row g-4 align-items-start">
+        <div class="col-auto">
+          {% if app.icon %}
+            <img src="{{ app.icon.url }}" alt="{{ app.name }} icon" class="app-icon-lg" width="120" height="120">
+          {% else %}
+            <div class="app-icon-placeholder-lg" aria-hidden="true"><i class="bi bi-app"></i></div>
+          {% endif %}
+        </div>
+
+        <div class="col">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <h1 class="h2 fw-bold mb-0">{{ app.name }}</h1>
+            {% if app.is_featured %}<span class="badge badge-platform badge-featured">Featured</span>{% endif %}
+            {% if app.is_verified %}<span class="badge badge-platform badge-verified"><i class="bi bi-shield-check me-1"></i>Verified</span>{% endif %}
+            {% if app.has_android %}<span class="badge badge-platform badge-android">Android</span>{% endif %}
+            {% if app.has_windows %}<span class="badge badge-platform badge-windows">Windows</span>{% endif %}
+          </div>
+
+          <p class="text-muted mb-3">
+            Version <strong class="text-dark">{{ app.version }}</strong>
+          </p>
+
+          <div class="trust-strip mb-4">
+            <span class="meta-item"><i class="bi bi-download"></i> <strong class="text-dark">{{ app.download_count }}</strong> downloads</span>
+            <span class="meta-item"><i class="bi bi-calendar3"></i> Updated {{ app.updated_at|date:"M j, Y" }}</span>
+            <span class="meta-item"><i class="bi bi-clock-history"></i> Uploaded {{ app.created_at|date:"M j, Y" }}</span>
+            {% if app.is_verified %}
+              <span class="meta-item"><i class="bi bi-shield-check text-success"></i> Verified by admin</span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            {% if app.has_android and app.has_windows %}
+              <button type="button" class="btn btn-brand btn-download" data-bs-toggle="modal" data-bs-target="#platformModal">
+                <i class="bi bi-download me-2"></i> Download
+              </button>
+            {% elif app.has_android %}
+              <a href="{% url 'store:download' app.pk 'android' %}" class="btn btn-brand btn-download" data-download-link>
+                <span class="btn-label"><i class="bi bi-download me-2"></i> Download APK</span>
+              </a>
+            {% elif app.has_windows %}
+              <a href="{% url 'store:download' app.pk 'windows' %}" class="btn btn-brand btn-download" data-download-link>
+                <span class="btn-label"><i class="bi bi-download me-2"></i> Download EXE</span>
+              </a>
+            {% endif %}
+
+            <button type="button" class="btn btn-outline-secondary rounded-pill"
+                    data-copy="{{ request.scheme }}://{{ request.get_host }}{% url 'store:detail' app.pk %}">
+              <i class="bi bi-share me-1"></i> Share
+            </button>
+            <a href="{% url 'store:report' app.pk %}" class="btn btn-outline-secondary rounded-pill">
+              <i class="bi bi-flag me-1"></i> Report
+            </a>
+            <a href="{% url 'store:home' %}" class="btn btn-outline-secondary rounded-pill">
+              <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        {% if app.has_android %}
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-android2 fs-4 text-success"></i>
+                <div>
+                  <div class="fw-semibold">Android</div>
+                  <div class="small text-muted">.APK · {{ app.android_file_size_display }} · {{ app.android_download_count }} downloads</div>
+                </div>
+              </div>
+              {% if app.android_sha256 %}
+                <div class="mono-hash mb-2" title="SHA-256">SHA-256: {{ app.android_sha256 }}</div>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill mb-2" data-copy="{{ app.android_sha256 }}">
+                  <i class="bi bi-clipboard me-1"></i> Copy hash
+                </button>
+              {% endif %}
+              <a href="{% url 'store:download' app.pk 'android' %}" class="btn btn-success rounded-pill w-100" data-download-link>
+                <span class="btn-label"><i class="bi bi-download me-1"></i> Download APK</span>
+              </a>
+            </div>
+          </div>
+        {% endif %}
+        {% if app.has_windows %}
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-windows fs-4 text-primary"></i>
+                <div>
+                  <div class="fw-semibold">Windows</div>
+                  <div class="small text-muted">.EXE · {{ app.windows_file_size_display }} · {{ app.windows_download_count }} downloads</div>
+                </div>
+              </div>
+              {% if app.windows_sha256 %}
+                <div class="mono-hash mb-2" title="SHA-256">SHA-256: {{ app.windows_sha256 }}</div>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill mb-2" data-copy="{{ app.windows_sha256 }}">
+                  <i class="bi bi-clipboard me-1"></i> Copy hash
+                </button>
+              {% endif %}
+              <a href="{% url 'store:download' app.pk 'windows' %}" class="btn btn-primary rounded-pill w-100" data-download-link>
+                <span class="btn-label"><i class="bi bi-download me-1"></i> Download EXE</span>
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <hr class="my-4">
+
+      <div class="mb-4">
+        <h2 class="h5 fw-semibold mb-3">About this app</h2>
+        <div class="text-secondary" style="white-space: pre-line; line-height: 1.7;">{{ app.description }}</div>
+      </div>
+
+      {% if app.changelog %}
+        <div class="mb-4">
+          <h2 class="h5 fw-semibold mb-3"><i class="bi bi-journal-text me-1"></i> What’s new</h2>
+          <div class="text-secondary" style="white-space: pre-line; line-height: 1.7;">{{ app.changelog }}</div>
+        </div>
+      {% endif %}
+
+      {% if app.requirements %}
+        <div class="mb-4">
+          <h2 class="h5 fw-semibold mb-3"><i class="bi bi-cpu me-1"></i> System requirements</h2>
+          <div class="text-secondary" style="white-space: pre-line; line-height: 1.7;">{{ app.requirements }}</div>
+        </div>
+      {% endif %}
+
+      {% if app.screenshots.all %}
+        <div class="mb-2">
+          <h2 class="h5 fw-semibold mb-3"><i class="bi bi-images me-1"></i> Screenshots</h2>
+          <div class="row g-3">
+            {% for shot in app.screenshots.all %}
+              <div class="col-6 col-md-4 col-lg-3">
+                <img src="{{ shot.image.url }}" alt="{{ shot.caption|default:app.name }}" class="shot-thumb"
+                     data-bs-toggle="modal" data-bs-target="#shotModal{{ shot.pk }}">
+                {% if shot.caption %}<div class="small text-muted mt-1">{{ shot.caption }}</div>{% endif %}
+              </div>
+              <div class="modal fade" id="shotModal{{ shot.pk }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-body p-2">
+                      <img src="{{ shot.image.url }}" alt="{{ shot.caption|default:app.name }}" class="w-100 rounded">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if recently_viewed %}
+      <div class="mt-4">
+        <h2 class="section-title h6 text-muted mb-3">Recently viewed</h2>
+        <div class="row g-3">
+          {% for r in recently_viewed %}
+            <div class="col-sm-6 col-lg-4">
+              {% include "store/_app_card.html" with app=r %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if app.has_android and app.has_windows %}
+<div class="modal fade" id="platformModal" tabindex="-1" aria-labelledby="platformModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h2 class="modal-title h5" id="platformModalLabel">Choose your platform</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'store:download' app.pk 'android' %}" class="btn btn-success btn-lg rounded-pill" data-download-link>
+            <span class="btn-label"><i class="bi bi-android2 me-2"></i> Android APK · {{ app.android_file_size_display }}</span>
+          </a>
+          <a href="{% url 'store:download' app.pk 'windows' %}" class="btn btn-primary btn-lg rounded-pill" data-download-link>
+            <span class="btn-label"><i class="bi bi-windows me-2"></i> Windows EXE · {{ app.windows_file_size_display }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="sticky-download">
+  <div class="d-flex gap-2">
+    {% if app.has_android and app.has_windows %}
+      <button type="button" class="btn btn-brand flex-fill" data-bs-toggle="modal" data-bs-target="#platformModal">
+        <i class="bi bi-download me-1"></i> Download
+      </button>
+    {% elif app.has_android %}
+      <a href="{% url 'store:download' app.pk 'android' %}" class="btn btn-brand flex-fill" data-download-link>
+        <span class="btn-label"><i class="bi bi-download me-1"></i> Download APK</span>
+      </a>
+    {% elif app.has_windows %}
+      <a href="{% url 'store:download' app.pk 'windows' %}" class="btn btn-brand flex-fill" data-download-link>
+        <span class="btn-label"><i class="bi bi-download me-1"></i> Download EXE</span>
+      </a>
+    {% endif %}
+    <button type="button" class="btn btn-outline-secondary"
+            data-copy="{{ request.scheme }}://{{ request.get_host }}{% url 'store:detail' app.pk %}">
+      <i class="bi bi-share"></i>
+    </button>
+  </div>
+</div>
+{% endblock %}

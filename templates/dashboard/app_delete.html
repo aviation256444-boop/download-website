@@ -1,0 +1,37 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}Delete {{ app.name }}{% endblock %}
+{% block page_title %}Delete app{% endblock %}
+{% block content %}
+<div class="form-card" style="max-width: 520px;">
+  <div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 text-danger mb-3"
+         style="width:64px;height:64px;font-size:1.75rem;">
+      <i class="bi bi-trash"></i>
+    </div>
+    <h2 class="h4 fw-bold">Delete “{{ app.name }}”?</h2>
+    <p class="text-secondary mb-0">
+      This permanently removes the listing, screenshots, and all uploaded files. This cannot be undone.
+    </p>
+  </div>
+  <div class="border rounded-3 p-3 mb-4" style="border-color: var(--border) !important;">
+    <div class="d-flex align-items-center gap-3">
+      {% if app.icon %}
+        <img src="{{ app.icon.url }}" alt="" class="app-thumb">
+      {% else %}
+        <div class="app-thumb-ph"><i class="bi bi-app"></i></div>
+      {% endif %}
+      <div>
+        <div class="fw-semibold">{{ app.name }}</div>
+        <div class="small text-muted">v{{ app.version }} · {{ app.platform_label }}</div>
+      </div>
+    </div>
+  </div>
+  <form method="post" class="d-flex flex-wrap gap-2 justify-content-center" data-loading>
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger px-4" onclick="return confirm('Really delete this app?');">
+      <span class="btn-label"><i class="bi bi-trash me-1"></i> Yes, delete</span>
+    </button>
+    <a href="{% url 'store:dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+  </form>
+</div>
+{% endblock %}

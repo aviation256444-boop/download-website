@@ -1,0 +1,149 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'store:dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" data-loading novalidate>
+    {% csrf_token %}
+
+    <div class="form-section">
+      <h3><i class="bi bi-info-circle text-primary"></i> App details</h3>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% for e in form.name.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="{{ form.version.id_for_label }}">{{ form.version.label }}</label>
+          {{ form.version }}
+          {% for e in form.version.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">App icon</label>
+          <div class="dropzone">
+            <i class="bi bi-image fs-3 d-block mb-1"></i>
+            <div>Drag &amp; drop icon, or click to browse</div>
+            <div class="dz-filename small" data-placeholder="PNG, JPG, WEBP…">No file chosen</div>
+            {{ form.icon }}
+          </div>
+          {% for e in form.icon.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          {% if is_edit and app.icon %}
+            <div class="form-check mt-2">{{ form.clear_icon }} <label class="form-check-label" for="{{ form.clear_icon.id_for_label }}">{{ form.clear_icon.label }}</label></div>
+            <img src="{{ app.icon.url }}" alt="" class="mt-2" style="width:48px;height:48px;border-radius:10px;object-fit:cover;">
+          {% endif %}
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}
+        {% for e in form.description.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="{{ form.changelog.id_for_label }}">{{ form.changelog.label }}</label>
+        {{ form.changelog }}
+      </div>
+      <div class="mb-0">
+        <label class="form-label fw-semibold" for="{{ form.requirements.id_for_label }}">{{ form.requirements.label }}</label>
+        {{ form.requirements }}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3><i class="bi bi-android2 text-success"></i> Android platform</h3>
+      <p class="small text-muted mb-3">Upload the APK (.apk only · max 200 MB).</p>
+      <div class="dropzone">
+        <i class="bi bi-file-earmark-arrow-up fs-3 d-block mb-1"></i>
+        <div>Drag &amp; drop APK here</div>
+        <div class="dz-filename small" data-placeholder="No file chosen">No file chosen</div>
+        {{ form.android_file }}
+      </div>
+      {% for e in form.android_file.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+      {% if is_edit and app.android_file %}
+        <div class="mt-2 small">Current: <a href="{{ app.android_file.url }}" target="_blank">{{ app.android_file.name|cut:"apps/android/" }}</a> ({{ app.android_file_size_display }})</div>
+        <div class="form-check mt-2">{{ form.clear_android }} <label class="form-check-label" for="{{ form.clear_android.id_for_label }}">{{ form.clear_android.label }}</label></div>
+      {% endif %}
+    </div>
+
+    <div class="form-section">
+      <h3><i class="bi bi-windows text-primary"></i> Windows platform</h3>
+      <p class="small text-muted mb-3">Upload the EXE (.exe only · max 200 MB).</p>
+      <div class="dropzone">
+        <i class="bi bi-file-earmark-arrow-up fs-3 d-block mb-1"></i>
+        <div>Drag &amp; drop EXE here</div>
+        <div class="dz-filename small" data-placeholder="No file chosen">No file chosen</div>
+        {{ form.windows_file }}
+      </div>
+      {% for e in form.windows_file.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+      {% if is_edit and app.windows_file %}
+        <div class="mt-2 small">Current: <a href="{{ app.windows_file.url }}" target="_blank">{{ app.windows_file.name|cut:"apps/windows/" }}</a> ({{ app.windows_file_size_display }})</div>
+        <div class="form-check mt-2">{{ form.clear_windows }} <label class="form-check-label" for="{{ form.clear_windows.id_for_label }}">{{ form.clear_windows.label }}</label></div>
+      {% endif %}
+    </div>
+
+    <div class="form-section">
+      <h3><i class="bi bi-images text-secondary"></i> Screenshots</h3>
+      <p class="small text-muted mb-3">Optional gallery images (up to 8).</p>
+      {{ formset.management_form }}
+      {% for sform in formset %}
+        <div class="border rounded-3 p-3 mb-2">
+          {% for hidden in sform.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="row g-2 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label small">Image</label>
+              {{ sform.image }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">Caption</label>
+              {{ sform.caption }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Order</label>
+              {{ sform.sort_order }}
+            </div>
+            {% if sform.instance.pk %}
+              <div class="col-md-1">
+                <div class="form-check">
+                  {{ sform.DELETE }}
+                  <label class="form-check-label small" for="{{ sform.DELETE.id_for_label }}">Del</label>
+                </div>
+              </div>
+              {% if sform.instance.image %}
+                <div class="col-12">
+                  <img src="{{ sform.instance.image.url }}" alt="" style="height:48px;border-radius:8px;">
+                </div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="form-section">
+      <h3><i class="bi bi-eye text-secondary"></i> Visibility</h3>
+      <div class="form-check mb-2">{{ form.is_published }} <label class="form-check-label" for="{{ form.is_published.id_for_label }}">{{ form.is_published.label }}</label></div>
+      <div class="form-check mb-2">{{ form.is_featured }} <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">{{ form.is_featured.label }}</label></div>
+      <div class="form-check mb-0">{{ form.is_verified }} <label class="form-check-label" for="{{ form.is_verified.id_for_label }}">{{ form.is_verified.label }}</label></div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button type="submit" class="btn btn-brand btn-lg px-4">
+        <span class="btn-label"><i class="bi bi-check2-circle me-1"></i> {{ submit_label }}</span>
+      </button>
+      <a href="{% url 'store:dashboard' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

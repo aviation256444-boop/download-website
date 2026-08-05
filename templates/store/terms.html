@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Terms — AppStore{% endblock %}
+{% block content %}
+<section class="py-4 py-md-5">
+  <div class="container" style="max-width: 800px;">
+    <div class="detail-card p-4 p-md-5">
+      <h1 class="h2 fw-bold mb-3">Terms of use</h1>
+      <p class="text-secondary">Last updated: {% now "F j, Y" %}</p>
+      <div class="text-secondary" style="line-height: 1.75;">
+        <p>AppStore is provided for distributing internal or authorized applications. You must be signed in to browse and download content.</p>
+        <p>You agree not to misuse the service, attempt unauthorized access, or redistribute files without permission from the content owner.</p>
+        <p>Apps are provided as-is by the administrators who upload them. Verify checksums when available and only install software you trust.</p>
+        <p>Staff may suspend accounts or remove content that violates these terms. Contact <a href="mailto:{{ support_email }}">{{ support_email }}</a> for questions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

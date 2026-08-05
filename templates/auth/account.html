@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}My account — AppStore{% endblock %}
+{% block content %}
+<section class="py-4 py-md-5">
+  <div class="container" style="max-width: 640px;">
+    <div class="detail-card p-4 p-md-5">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <span class="avatar-circle" style="width:56px;height:56px;font-size:1.25rem;background:var(--brand);">
+          {{ user_obj.username|first|upper }}
+        </span>
+        <div>
+          <h1 class="h3 fw-bold mb-0">{{ user_obj.get_full_name|default:user_obj.username }}</h1>
+          <p class="text-muted mb-0">@{{ user_obj.username }}</p>
+        </div>
+      </div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-muted">Email</dt>
+        <dd class="col-sm-8">{{ user_obj.email|default:"—" }}</dd>
+        <dt class="col-sm-4 text-muted">Role</dt>
+        <dd class="col-sm-8">
+          {% if user_obj.is_superuser %}Admin{% elif user_obj.is_staff %}Staff{% else %}User{% endif %}
+        </dd>
+      </dl>
+      <hr class="my-4">
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'store:home' %}" class="btn btn-brand">Browse apps</a>
+        {% if user_obj.is_staff %}
+          <a href="{% url 'store:dashboard' %}" class="btn btn-outline-secondary rounded-pill">Dashboard</a>
+        {% endif %}
+        <a href="{% url 'store:logout' %}" class="btn btn-outline-danger rounded-pill">Sign out</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

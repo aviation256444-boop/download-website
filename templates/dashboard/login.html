@@ -1,0 +1,51 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <div class="brand mb-1">
+        <i class="bi bi-grid-1x2-fill text-primary me-1"></i> AppStore
+      </div>
+      <p class="text-secondary mb-0 small">Management dashboard</p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-danger py-2 small">{{ error }}</div>
+    {% endif %}
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} py-2 small">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'store:dashboard_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <div class="mb-3">
+        <label class="form-label" for="id_username">Username</label>
+        <input type="text" name="username" id="id_username" class="form-control form-control-lg"
+               autocomplete="username" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="id_password">Password</label>
+        <input type="password" name="password" id="id_password" class="form-control form-control-lg"
+               autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-brand btn-lg w-100">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Sign in
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'store:home' %}" class="small text-secondary text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to store
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

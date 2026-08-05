@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Privacy — AppStore{% endblock %}
+{% block content %}
+<section class="py-4 py-md-5">
+  <div class="container" style="max-width: 800px;">
+    <div class="detail-card p-4 p-md-5">
+      <h1 class="h2 fw-bold mb-3">Privacy policy</h1>
+      <p class="text-secondary">Last updated: {% now "F j, Y" %}</p>
+      <div class="text-secondary" style="line-height: 1.75;">
+        <p>AppStore collects account information you provide (username, email, name) and authentication data from Google if you sign in with Google OAuth.</p>
+        <p>We store session cookies to keep you signed in and remember recently viewed apps. Download activity may be logged for operational statistics.</p>
+        <p>Uploaded app files and icons are stored on the server for distribution to signed-in users. Do not upload personal data inside app packages unless necessary.</p>
+        <p>Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a> for privacy questions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

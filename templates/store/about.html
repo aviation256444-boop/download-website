@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}About — AppStore{% endblock %}
+{% block content %}
+<section class="py-4 py-md-5">
+  <div class="container" style="max-width: 800px;">
+    <div class="detail-card p-4 p-md-5">
+      <h1 class="h2 fw-bold mb-3">How AppStore works</h1>
+      <p class="text-secondary mb-4">
+        {{ site_settings.about_text }}
+      </p>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="border rounded-4 p-3 h-100 text-center">
+            <div class="display-6 text-primary mb-2">1</div>
+            <h2 class="h6 fw-bold">Sign in</h2>
+            <p class="small text-muted mb-0">Use Google or create an account with the form.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-4 p-3 h-100 text-center">
+            <div class="display-6 text-primary mb-2">2</div>
+            <h2 class="h6 fw-bold">Browse</h2>
+            <p class="small text-muted mb-0">Filter by platform, sort by downloads, open app details.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-4 p-3 h-100 text-center">
+            <div class="display-6 text-primary mb-2">3</div>
+            <h2 class="h6 fw-bold">Download</h2>
+            <p class="small text-muted mb-0">Get the Android APK and/or Windows EXE for your device.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-muted small mb-0">
+        Need help? Email <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

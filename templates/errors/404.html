@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Page not found — AppStore{% endblock %}
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="empty-state">
+      <div><i class="bi bi-compass"></i></div>
+      <h1 class="h3">Page not found</h1>
+      <p class="mb-3">That link may be broken or the app was removed.</p>
+      <a href="{% url 'store:home' %}" class="btn btn-brand">Back to store</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,20 +1,20 @@
 # Deploy AppStore on PythonAnywhere
 
-This guide assumes a **Beginner (free)** or paid PythonAnywhere account and a clone of this GitHub repo.
+**Your site:** https://download245.pythonanywhere.com  
+**PA username:** `download245`  
+**Repo:** https://github.com/aviation256444-boop/download-website
 
 ---
 
-## 1. Push / clone the code
+## 1. Clone the code
 
 On PythonAnywhere **Bash** console:
 
 ```bash
 cd ~
-git clone https://github.com/YOUR_GITHUB_USER/download-website.git
+git clone https://github.com/aviation256444-boop/download-website.git
 cd download-website
 ```
-
-(Use the real repo URL after push.)
 
 ---
 
@@ -40,19 +40,19 @@ cd ~/download-website
 nano .env
 ```
 
-Paste (edit values):
+Paste (edit secrets):
 
 ```env
 DJANGO_SECRET_KEY=generate-a-long-random-string
 DJANGO_DEBUG=0
-DJANGO_ALLOWED_HOSTS=YOUR_USERNAME.pythonanywhere.com
-DJANGO_CSRF_TRUSTED_ORIGINS=https://YOUR_USERNAME.pythonanywhere.com
+DJANGO_ALLOWED_HOSTS=download245.pythonanywhere.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://download245.pythonanywhere.com
 
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
 ```
 
-Generate a secret key locally or in the console:
+Generate a secret key:
 
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
@@ -79,7 +79,7 @@ python manage.py shell
 ```python
 from django.contrib.sites.models import Site
 s = Site.objects.get(id=1)
-s.domain = 'YOUR_USERNAME.pythonanywhere.com'
+s.domain = 'download245.pythonanywhere.com'
 s.name = 'AppStore'
 s.save()
 exit()
@@ -89,19 +89,19 @@ exit()
 
 ## 5. Web app configuration (Dashboard)
 
-1. **Web** → **Add a new web app** → **Manual configuration** → Python 3.10 (match venv).
-2. **Source code**: `/home/YOUR_USERNAME/download-website`
-3. **Working directory**: `/home/YOUR_USERNAME/download-website`
-4. **Virtualenv**: `/home/YOUR_USERNAME/.virtualenvs/appstore-env`
-5. **WSGI file**: open the link and **replace** the file contents with the adapted version of `pythonanywhere_wsgi.py` from this repo:
-   - Set `project_home` to `/home/YOUR_USERNAME/download-website`
-   - Set `venv_site` to your real `site-packages` path (check with `python -c "import site; print(site.getsitepackages())"` inside the venv)
+1. **Web** → **Add a new web app** → domain `download245.pythonanywhere.com` → **Manual configuration** → Python 3.10 (match venv).
+2. **Source code**: `/home/download245/download-website`
+3. **Working directory**: `/home/download245/download-website`
+4. **Virtualenv**: `/home/download245/.virtualenvs/appstore-env`
+5. **WSGI file**: open the link and **replace** contents with `pythonanywhere_wsgi.py` from the repo (already set for `download245`).
+   - If site-packages path fails, check:  
+     `python -c "import site; print(site.getsitepackages())"` inside the venv
 6. **Static files** mappings:
 
-| URL        | Directory                                      |
-|------------|------------------------------------------------|
-| `/static/` | `/home/YOUR_USERNAME/download-website/staticfiles` |
-| `/media/`  | `/home/YOUR_USERNAME/download-website/media`   |
+| URL        | Directory                                           |
+|------------|-----------------------------------------------------|
+| `/static/` | `/home/download245/download-website/staticfiles`    |
+| `/media/`  | `/home/download245/download-website/media`          |
 
 7. Click **Reload** on the Web tab.
 
@@ -113,12 +113,12 @@ In [Google Cloud Console](https://console.cloud.google.com/) → OAuth client:
 
 **Authorized JavaScript origins**
 ```text
-https://YOUR_USERNAME.pythonanywhere.com
+https://download245.pythonanywhere.com
 ```
 
 **Authorized redirect URIs**
 ```text
-https://YOUR_USERNAME.pythonanywhere.com/accounts/google/login/callback/
+https://download245.pythonanywhere.com/accounts/google/login/callback/
 ```
 
 Keep localhost entries if you still develop locally.
@@ -150,12 +150,12 @@ Then **Web → Reload**.
 
 ## Checklist
 
-- [ ] `.env` on server with `DJANGO_DEBUG=0` and correct host
+- [ ] `.env` on server with `DJANGO_DEBUG=0` and host `download245.pythonanywhere.com`
 - [ ] `migrate` + `collectstatic` + superuser
-- [ ] Site domain = `YOUR_USERNAME.pythonanywhere.com`
+- [ ] Site domain = `download245.pythonanywhere.com`
 - [ ] WSGI paths + virtualenv correct
 - [ ] Static `/static/` → `staticfiles`, Media `/media/` → `media`
-- [ ] Google redirect URI uses `https://…pythonanywhere.com/...`
+- [ ] Google redirect URI = `https://download245.pythonanywhere.com/accounts/google/login/callback/`
 - [ ] Web app reloaded
 
-Open: `https://YOUR_USERNAME.pythonanywhere.com/`
+Open: **https://download245.pythonanywhere.com/**

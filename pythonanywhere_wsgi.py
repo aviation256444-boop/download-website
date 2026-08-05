@@ -1,22 +1,21 @@
 """
-Copy/adapt this into your PythonAnywhere Web → WSGI configuration file.
-
-Replace YOUR_USERNAME and the project folder name if different.
+Copy this into your PythonAnywhere Web → WSGI configuration file
+(or use as reference). Paths are for user: download245
 """
 
 import os
 import sys
 from pathlib import Path
 
-# --- Project path (adjust if your clone path differs) ---
-project_home = '/home/YOUR_USERNAME/download-website'
+# --- Project path ---
+project_home = '/home/download245/download-website'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
-# --- Virtualenv site-packages (adjust venv name if needed) ---
-# Example after: mkvirtualenv --python=python3.10 appstore-env
-# Or: path/to/venv/lib/python3.x/site-packages
-venv_site = '/home/YOUR_USERNAME/.virtualenvs/appstore-env/lib/python3.10/site-packages'
+# --- Virtualenv site-packages ---
+# After: mkvirtualenv --python=python3.10 appstore-env
+# If Python version differs, fix the 3.10 path (ls ~/.virtualenvs/appstore-env/lib/)
+venv_site = '/home/download245/.virtualenvs/appstore-env/lib/python3.10/site-packages'
 if os.path.isdir(venv_site) and venv_site not in sys.path:
     sys.path.insert(0, venv_site)
 
